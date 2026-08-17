@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YOO-motto</title>
+<style>
+:root{--ox:#30070d;--cream:#f7e8c8;--soft:#d9c29c;--border:rgba(247,232,200,.28)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--ox);color:var(--cream);font-family:Georgia,"Times New Roman",serif;display:flex;align-items:center;justify-content:center;padding:24px}
+.wrap{width:min(720px,100%);text-align:center}
+.logo{font-family:Arial,sans-serif;font-weight:900;letter-spacing:3px;font-size:clamp(2.3rem,8vw,4.5rem);margin-bottom:8px}
+.tagline{color:var(--soft);font-size:1rem;margin-bottom:30px}
+.card{background:rgba(247,232,200,.08);border:1px solid var(--border);border-radius:24px;padding:clamp(24px,6vw,46px);box-shadow:0 18px 60px rgba(0,0,0,.22)}
+h1{font-size:clamp(1.7rem,5vw,2.5rem);margin:0 0 12px}
+p{line-height:1.65;color:var(--soft);margin:0 auto 24px;max-width:570px}
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px}
+button,textarea{font:inherit}
+.option,.back{color:var(--cream);background:transparent;border:1px solid var(--border);border-radius:14px;padding:15px 14px;cursor:pointer;transition:.2s ease}
+.option:hover,.back:hover{background:var(--cream);color:var(--ox);transform:translateY(-2px)}
+.hidden{display:none}
+.answer{margin-top:22px;padding:20px;border:1px solid var(--border);border-radius:16px}
+.answer h2{margin-top:0;font-size:1.25rem}
+textarea{width:100%;min-height:130px;resize:vertical;padding:14px;color:var(--cream);background:rgba(0,0,0,.14);border:1px solid var(--border);border-radius:12px;outline:none}
+textarea::placeholder{color:#cbb990}
+.send{margin-top:12px;width:100%;color:var(--ox);background:var(--cream);border:0;border-radius:12px;padding:14px;font-weight:bold;cursor:pointer}
+.send:disabled{opacity:.65;cursor:wait}
+.small{margin-top:18px;font-size:.85rem;color:#cbb990}
+.status{margin-top:14px;color:var(--soft);font-size:.9rem}
+.signature{
+  position:fixed;
+  right:18px;
+  bottom:14px;
+  color:var(--cream);
+  opacity:.38;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:.85rem;
+  letter-spacing:1px;
+  user-select:none;
+  pointer-events:none;
+}
+@media(max-width:520px){
+  body{padding:14px}
+  .options{grid-template-columns:1fr}
+  .card{border-radius:20px}
+  .signature{right:12px;bottom:10px;font-size:.78rem}
+}
+</style>
+</head>
+<body>
+<div class="signature">ByMaria</div>
+<div class="wrap">
+  <div class="logo">YOO-motto</div>
+  <div class="tagline">A tiny place to say what's actually going on.</div>
+
+  <main class="card">
+    <section id="start">
+      <h1>Let's work on it?</h1>
+      <p>No interrogation. No awkward “it's nothing.” Just pick whatever feels closest. You can explain everything at the end.</p>
+      <div class="options">
+        <button class="option" onclick="choose('Just tired')">Just tired</button>
+        <button class="option" onclick="choose('Something happened')">Something happened</button>
+        <button class="option" onclick="choose('I need some space')">I need some space</button>
+        <button class="option" onclick="choose('I feel misunderstood')">I feel misunderstood</button>
+        <button class="option" onclick="choose('I am annoyed')">I'm annoyed</button>
+        <button class="option" onclick="choose('I do not know')">I don't even know</button>
+        <button class="option" onclick="choose('I am okay, honestly')">I'm okay, honestly</button>
+        <button class="option" onclick="choose('It is something else')">Something else</button>
+      </div>
+      <div class="small">There is no wrong answer. Seriously.</div>
+    </section>
+
+    <section id="response" class="hidden">
+      <h1 id="picked"></h1>
+      <p>Fair enough. But if there's something you want to say, this is your completely judgment-free corner.</p>
+
+      <!-- The form sends the selected option and message to your email. -->
+      <form id="yooForm"
+            action="https://formsubmit.co/xmahamnx@gmail.com"
+            method="POST">
+
+        <input type="hidden" name="_subject" value="YOO-motto — Someone answered">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_next" id="nextUrl">
+
+        <input type="hidden" name="What he chose" id="selectedMood">
+
+        <div class="answer">
+          <h2>Let me know what makes you feel this way</h2>
+          <textarea id="message" name="What he wrote"
+            placeholder="You can be honest. You don't have to make it sound nice."
+            required></textarea>
+          <button class="send" id="sendBtn" type="submit">Send it gently 🤍</button>
+          <div class="status" id="status"></div>
+        </div>
+      </form>
+
+      <button class="back" onclick="restart()">← Pick another answer</button>
+    </section>
+
+    <section id="done" class="hidden">
+      <h1>Okay. I hear you. 🤍</h1>
+      <p>Thank you for saying it instead of keeping it bottled up. Whatever it is, it matters enough to be heard.</p>
+      <button class="back" onclick="restart()">Back to YOO-motto</button>
+    </section>
+  </main>
+</div>
+
+<script>
+let selected = "";
+
+function choose(answer){
+  selected = answer;
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("response").classList.remove("hidden");
+  document.getElementById("picked").textContent = answer;
+  document.getElementById("selectedMood").value = answer;
+
+  // After FormSubmit processes the form, this URL is where the visitor returns.
+  document.getElementById("nextUrl").value = window.location.href.split("#")[0] + "#thanks";
+  document.querySelector('input[name="_subject"]').value = "YOO — " + answer;
+  document.getElementById("message").focus();
+}
+
+document.getElementById("yooForm").addEventListener("submit", function(){
+  document.getElementById("sendBtn").disabled = true;
+  document.getElementById("sendBtn").textContent = "Sending gently… 🤍";
+});
+
+function restart(){
+  document.getElementById("done").classList.add("hidden");
+  document.getElementById("response").classList.add("hidden");
+  document.getElementById("start").classList.remove("hidden");
+  document.getElementById("message").value = "";
+  document.getElementById("sendBtn").disabled = false;
+  document.getElementById("sendBtn").textContent = "Send it gently 🤍";
+}
+
+if(location.hash === "#thanks"){
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("response").classList.add("hidden");
+  document.getElementById("done").classList.remove("hidden");
+}
+</script>
+</body>
+</html>
